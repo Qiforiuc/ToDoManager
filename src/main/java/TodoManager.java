@@ -2,11 +2,14 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
-public class TodoManager {
-  private TaskRepository taskRepository;
-
-  public TodoManager(TaskRepository taskRepository) {
+public class TodoManager implements TaskRepository{
+  private final TaskRepository taskRepository;
+  private final Scanner scanner;
+  private Task task;
+  public TodoManager(TaskRepository taskRepository, Scanner scanner) {
     this.taskRepository = taskRepository;
+    this.scanner = scanner;
+    task = new Task();
   }
 
   public void run() {
@@ -29,19 +32,66 @@ public class TodoManager {
 
         switch (choice) {
           case 1:
-            addTask(scanner);
+            System.out.println("Enter task name: ");
+            task.setName(scanner.nextLine());
+            System.out.println("Enter task description: ");
+            task.setDescription(scanner.nextLine());
+            task.setStatus(Status.TODO);
+            addTask(task);
+            task = null;
             break;
           case 2:
-            updateTask(scanner);
+            System.out.print("Enter task ID: ");
+            int id = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+
+            task = taskRepository.getTaskById(id);
+
+            if (task == null) {
+              System.out.println("Task not found.");
+            } else {
+              System.out.println("Current task details: " + task);
+              System.out.print("Enter new task name (leave blank to keep current value): ");
+              String name = scanner.nextLine();
+              System.out.print("Enter new task description (leave blank to keep current value): ");
+              String description = scanner.nextLine();
+              System.out.print("Enter new task status (leave blank to keep current value): ");
+              String statusStr = scanner.nextLine();
+
+              if (!name.isEmpty()) {
+                task.setName(name);
+              }
+              if (!description.isEmpty()) {
+                task.setDescription(description);
+              }
+              if (!statusStr.isEmpty()) {
+                try {
+                  Status status = Status.valueOf(statusStr.toUpperCase());
+                  task.setStatus(status);
+                } catch (IllegalArgumentException e) {
+                  System.out.println("Invalid status, task status will not be updated.");
+                }
+              }
+              updateTask(task);
+              task = null;
+            }
             break;
           case 3:
-            deleteTask(scanner);
+            System.out.print("Enter task ID: ");
+            id = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+            deleteTask(id);
             break;
           case 4:
-            getTaskById(scanner);
+            System.out.print("Enter task ID: ");
+            id = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+            getTaskById(id);
             break;
           case 5:
-            getTasksByStatus(scanner);
+            System.out.print("Enter task status (TO_DO, IN_PROGRESS, or DONE): ");
+            Status status = Status.valueOf(scanner.nextLine().toUpperCase());
+            getTasksByStatus(status);
             break;
           case 0:
             System.out.println("Exiting...");
@@ -58,94 +108,44 @@ public class TodoManager {
     scanner.close();
   }
 
-  private void addTask(Scanner scanner) {
-    System.out.print("Enter task name: ");
-    String name = scanner.nextLine();
-    System.out.print("Enter task description: ");
-    String description = scanner.nextLine();
-    System.out.print("Enter task status (TODO, IN_PROGRESS, or DONE): ");
-    String statusStr = scanner.nextLine();
-
-    try {
-      Status status = Status.valueOf(statusStr.toUpperCase());
-      Task task = new Task(name, description, status);
-      taskRepository.addTask(task);
-      System.out.println("Task added: " + task);
-    } catch (IllegalArgumentException e) {
-      System.out.println("Invalid status, try again.");
-    }
+  @Override
+  public void addTask(Task task) {
+    taskRepository.addTask(task);
   }
 
-  private void updateTask(Scanner scanner) {
-    System.out.print("Enter task ID: ");
-    int id = scanner.nextInt();
-    scanner.nextLine();
+  @Override
+  public void updateTask(Task task) {
+    taskRepository.updateTask(task);
+    System.out.println("Task updated: " + task);
+  }
 
-    Task task = taskRepository.getTaskById(id);
+  @Override
+  public void deleteTask(int taskId) {
+    Task task = taskRepository.getTaskById(taskId);
 
     if (task == null) {
       System.out.println("Task not found.");
     } else {
-      System.out.println("Current task details: " + task);
-      System.out.print("Enter new task name (leave blank to keep current value): ");
-      String name = scanner.nextLine();
-      System.out.print("Enter new task description (leave blank to keep current value): ");
-      String description = scanner.nextLine();
-      System.out.print("Enter new task status (leave blank to keep current value): ");
-      String statusStr = scanner.nextLine();
-
-      if (!name.isEmpty()) {
-        task.setName(name);
-      }
-      if (!description.isEmpty()) {
-        task.setDescription(description);
-      }
-      if (!statusStr.isEmpty()) {
-        try {
-          Status status = Status.valueOf(statusStr.toUpperCase());
-          task.setStatus(status);
-        } catch (IllegalArgumentException e) {
-          System.out.println("Invalid status, task status will not be updated.");
-        }
-      }
-
-      taskRepository.updateTask(task);
-      System.out.println("Task updated: " + task);
-    }
-  }
-  private void deleteTask(Scanner scanner) {
-    System.out.print("Enter task ID: ");
-    int id = scanner.nextInt();
-    scanner.nextLine();
-
-    Task task = taskRepository.getTaskById(id);
-
-    if (task == null) {
-      System.out.println("Task not found.");
-    } else {
-      taskRepository.deleteTask(task.getId());
+      taskRepository.deleteTask(taskId);
       System.out.println("Task deleted: " + task);
     }
   }
-  //not used
-  private void getAllTasks() {
-    List<Task> tasks = taskRepository.getAllTasks();
-    if (tasks.isEmpty()) {
-      System.out.println("No tasks found.");
+
+  @Override
+  public Task getTaskById(int taskId) {
+    task = taskRepository.getTaskById(taskId);
+    if (task == null) {
+      System.out.println("Task not found.");
+      return task;
     } else {
-      System.out.println("All tasks:");
-      for (Task task : tasks) {
-        System.out.println(task);
-      }
+      System.out.println("Task details: " + task);
+      return task;
     }
   }
 
-  private void getTasksByStatus(Scanner scanner) {
-    System.out.print("Enter task status (TO_DO, IN_PROGRESS, or DONE): ");
-    String statusString = scanner.nextLine().toUpperCase();
-
+  @Override
+  public List<Task> getTasksByStatus(Status status) {
     try {
-      Status status = Status.valueOf(statusString);
       List<Task> tasks = taskRepository.getTasksByStatus(status);
 
       if (tasks.isEmpty()) {
@@ -157,22 +157,14 @@ public class TodoManager {
         }
       }
     } catch (IllegalArgumentException e) {
-      System.out.println("Invalid status. Please enter a valid status (TODO, IN_PROGRESS, or DONE).");
+      System.out.println("Invalid status. Please enter a valid status (TO_DO, IN_PROGRESS, or DONE).");
     }
+    return taskRepository.getTasksByStatus(status);
   }
 
-  private void getTaskById(Scanner scanner) {
-    System.out.print("Enter task ID: ");
-    int id = scanner.nextInt();
-    scanner.nextLine();
-
-    Task task = taskRepository.getTaskById(id);
-
-    if (task == null) {
-      System.out.println("Task not found.");
-    } else {
-      System.out.println("Task details: " + task);
-    }
+  @Override
+  public List<Task> getAllTasks() {
+    return taskRepository.getAllTasks();
   }
 
 }
