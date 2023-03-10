@@ -1,3 +1,7 @@
+package com.todo.repository;
+
+import com.todo.Status;
+import com.todo.Task;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -5,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 public class TaskRepositoryImpl implements TaskRepository {
+
   private final String url;
   private final String username;
   private final String password;

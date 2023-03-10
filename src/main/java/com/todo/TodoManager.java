@@ -1,11 +1,15 @@
-import java.sql.SQLException;
+package com.todo;
+
+import com.todo.repository.TaskRepository;
 import java.util.List;
 import java.util.Scanner;
 
-public class TodoManager implements TaskRepository{
+public class TodoManager implements TaskRepository {
+
   private final TaskRepository taskRepository;
   private final Scanner scanner;
   private Task task;
+
   public TodoManager(TaskRepository taskRepository, Scanner scanner) {
     this.taskRepository = taskRepository;
     this.scanner = scanner;
@@ -18,11 +22,11 @@ public class TodoManager implements TaskRepository{
 
     while (choice != 0) {
       System.out.println("TODO MANAGER");
-      System.out.println("1. Add Task");
-      System.out.println("2. Update Task");
-      System.out.println("3. Delete Task");
-      System.out.println("4. Get Task By ID");
-      System.out.println("5. Get Tasks By Status");
+      System.out.println("1. Add com.todo.Task");
+      System.out.println("2. Update com.todo.Task");
+      System.out.println("3. Delete com.todo.Task");
+      System.out.println("4. Get com.todo.Task By ID");
+      System.out.println("5. Get Tasks By com.todo.Status");
       System.out.println("0. Exit");
       System.out.print("Enter your choice: ");
 
@@ -48,7 +52,7 @@ public class TodoManager implements TaskRepository{
             task = taskRepository.getTaskById(id);
 
             if (task == null) {
-              System.out.println("Task not found.");
+              System.out.println("com.todo.Task not found.");
             } else {
               System.out.println("Current task details: " + task);
               System.out.print("Enter new task name (leave blank to keep current value): ");
@@ -116,7 +120,7 @@ public class TodoManager implements TaskRepository{
   @Override
   public void updateTask(Task task) {
     taskRepository.updateTask(task);
-    System.out.println("Task updated: " + task);
+    System.out.println("com.todo.Task updated: " + task);
   }
 
   @Override
@@ -124,10 +128,10 @@ public class TodoManager implements TaskRepository{
     Task task = taskRepository.getTaskById(taskId);
 
     if (task == null) {
-      System.out.println("Task not found.");
+      System.out.println("com.todo.Task not found.");
     } else {
       taskRepository.deleteTask(taskId);
-      System.out.println("Task deleted: " + task);
+      System.out.println("com.todo.Task deleted: " + task);
     }
   }
 
@@ -135,10 +139,10 @@ public class TodoManager implements TaskRepository{
   public Task getTaskById(int taskId) {
     task = taskRepository.getTaskById(taskId);
     if (task == null) {
-      System.out.println("Task not found.");
+      System.out.println("com.todo.Task not found.");
       return task;
     } else {
-      System.out.println("Task details: " + task);
+      System.out.println("com.todo.Task details: " + task);
       return task;
     }
   }
@@ -157,7 +161,8 @@ public class TodoManager implements TaskRepository{
         }
       }
     } catch (IllegalArgumentException e) {
-      System.out.println("Invalid status. Please enter a valid status (TO_DO, IN_PROGRESS, or DONE).");
+      System.out.println(
+          "Invalid status. Please enter a valid status (TO_DO, IN_PROGRESS, or DONE).");
     }
     return taskRepository.getTasksByStatus(status);
   }

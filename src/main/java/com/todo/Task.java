@@ -1,4 +1,7 @@
+package com.todo;
+
 public class Task {
+
   private int id;
   private String name;
   private String description;
@@ -49,7 +52,8 @@ public class Task {
 
   @Override
   public String toString() {
-    return "Task [id=" + id + ", name=" + name + ", description=" + description + ", status=" + status + "]";
+    return "com.todo.Task [id=" + id + ", name=" + name + ", description=" + description
+        + ", status=" + status + "]";
   }
 
 }

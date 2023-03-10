@@ -1,3 +1,7 @@
+package com.todo.repository;
+
+import com.todo.Status;
+import com.todo.Task;
 import java.util.List;
 
 public interface TaskRepository {
